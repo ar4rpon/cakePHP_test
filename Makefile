@@ -11,13 +11,13 @@ change_owner:
     sudo chown -R $(CURRENT_USER):$(CURRENT_USER) html
 
 # webコンテナに入るコマンド
-web_container:
+web:
 		docker exec -it cakephp-web-1 bash
 
 # dbコンテナに接続してmysqlコマンドラインを表示
-mysql_cli:
+db:
 		docker exec -it cakephp-db-1 mysql -u ${DB_USER} -p${DB_PASS}
-mysql_root_cli:
+db_root:
 		docker exec -it cakephp-db-1 mysql -uroot -p${DB_PASS}
 
 #Dockerのよく使うコマンドを書いておく
