@@ -12,6 +12,8 @@ RUN apt-get update \
   # mod_rewrite有効化
   && a2enmod rewrite
 
+# ログディレクトリの作成
+RUN mkdir -p /var/www/html/logs
 #ログファイルの書き込み権限を付与 
 RUN chown -R www-data:www-data /var/www/html/logs
 

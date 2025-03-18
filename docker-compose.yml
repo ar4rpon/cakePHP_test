@@ -22,6 +22,8 @@ services:
     # ローカルの./docker/mysql/my.cnfをコンテナの/etc/mysql/conf.d/my.cnfにマウント
     volumes:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      # cakeユーザーに権限付与
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     # .envで環境変数を管理
     environment:
       - MYSQL_DATABASE=${DB_NAME}
@@ -31,3 +33,16 @@ services:
     # 80番ポートを割り当て
     ports:
       - ${DB_PORT}:3306
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db:db
+    ports:
+      - 8085:80
+    environment:
+      PMA_HOST: db
+      PMA_USER: '${DB_USER}'
+      PMA_PASSWORD: '${DB_PASS}'
+      MYSQL_ROOT_PASSWORD: '${DB_PASS}'
+    depends_on:
+      - db
