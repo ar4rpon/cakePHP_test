@@ -4,45 +4,70 @@ services:
     build:
       context: ./docker/web
       dockerfile: Dockerfile
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
     # db起動後にwebを起動
     depends_on:
-      - db
-    # ローカルのカレントディレクトリをコンテナの/var/wwwにマウント
+      db:
+        condition: service_healthy
+    # ローカルのカレントディレクトリをコンテナの/var/www/htmlにマウント
     volumes:
-      - ./:/var/www
+      - ./:/var/www/html
     # 80番ポートを割り当て
     ports:
-      - ${WEB_PORT}:80
+      - ${WEB_PORT:-80}:80
+    restart: unless-stopped
 
   db:
     # mysql:8.0イメージから構築
     image: mysql:8.0
     # 認証プラグインをmysql_native_passwordに設定
     command: --default-authentication-plugin=mysql_native_password
-    # ローカルの./docker/mysql/my.cnfをコンテナの/etc/mysql/conf.d/my.cnfにマウント
+    # ボリューム設定
     volumes:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
       # cakeユーザーに権限付与
       - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
     # .envで環境変数を管理
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
-    # 80番ポートを割り当て
+    # 3306番ポートを割り当て
     ports:
-      - ${DB_PORT}:3306
+      - ${DB_PORT:-3306}:3306
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u$$MYSQL_USER",
+          "-p$$MYSQL_PASSWORD",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    links:
-      - db:db
+    depends_on:
+      - db
     ports:
-      - 8085:80
+      - ${PMA_PORT:-8085}:80
     environment:
       PMA_HOST: db
       PMA_USER: "${DB_USER}"
       PMA_PASSWORD: "${DB_PASS}"
       MYSQL_ROOT_PASSWORD: "${DB_PASS}"
-    depends_on:
-      - db
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

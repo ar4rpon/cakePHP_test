@@ -12,7 +12,7 @@ change_owner:
 
 # webコンテナに入るコマンド
 web:
-		docker exec -it cakephp-web-1 bash
+		docker exec -it -u 1000 cakephp-web-1 bash
 
 # dbコンテナに接続してmysqlコマンドラインを表示
 db:
