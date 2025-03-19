@@ -1,4 +1,4 @@
-This is a (multiple allowed):
+<!-- This is a (multiple allowed):
 
 * [x] bug
 * [ ] enhancement
@@ -20,4 +20,4 @@ P.S. Remember, an issue is not the place to ask questions. You can use [Stack Ov
 for that or join the #cakephp channel on irc.freenode.net, where we will be more
 than happy to help answer your questions.
 
-Before you open an issue, please check if a similar issue already exists or has been closed before.
+Before you open an issue, please check if a similar issue already exists or has been closed before. -->
