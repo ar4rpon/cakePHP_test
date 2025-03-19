@@ -27,9 +27,6 @@ services:
     # ボリューム設定
     volumes:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-      # cakeユーザーに権限付与
-      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - mysql_data:/var/lib/mysql
     # .envで環境変数を管理
     environment:
       - MYSQL_DATABASE=${DB_NAME}

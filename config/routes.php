@@ -1,23 +1,23 @@
 <?php
+
 /**
- * Routes configuration.
+ * ルーティング設定。
  *
- * In this file, you set up routes to your controllers and their actions.
- * Routes are very important mechanism that allows you to freely connect
- * different URLs to chosen controllers and their actions (functions).
+ * このファイルでは、コントローラーとそのアクションへのルートを設定します。
+ * ルートは、選択したコントローラーとそのアクション（関数）に異なるURLを自由に接続できる非常に重要なメカニズムです。
  *
- * It's loaded within the context of `Application::routes()` method which
- * receives a `RouteBuilder` instance `$routes` as method argument.
+ * これは、`Application::routes()`メソッドのコンテキスト内でロードされ、
+ * メソッド引数として`RouteBuilder`インスタンス`$routes`を受け取ります。
  *
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
+ * CakePHP(tm) : 高速開発フレームワーク (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
+ * MITライセンスに基づいてライセンスされています。
+ * 著作権およびライセンス情報の詳細については、LICENSE.txtをご覧ください。
+ * ファイルの再配布では、上記の著作権表示を保持する必要があります。
  *
  * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
+ * @link          https://cakephp.org CakePHP(tm) プロジェクト
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
@@ -25,71 +25,68 @@ use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
 
 /*
- * This file is loaded in the context of the `Application` class.
-  * So you can use  `$this` to reference the application class instance
-  * if required.
+ * このファイルは、`Application`クラスのコンテキストでロードされます。
+ * 必要に応じて、`$this`を使用してアプリケーションクラスのインスタンスを参照できます。
  */
+
 return function (RouteBuilder $routes): void {
     /*
-     * The default class to use for all routes
+     * すべてのルートで使用するデフォルトのクラス
      *
-     * The following route classes are supplied with CakePHP and are appropriate
-     * to set as the default:
+     * 次のルートクラスはCakePHPに付属しており、デフォルトとして設定するのに適しています。
      *
      * - Route
      * - InflectedRoute
      * - DashedRoute
      *
-     * If no call is made to `Router::defaultRouteClass()`, the class used is
-     * `Route` (`Cake\Routing\Route\Route`)
+     * `Router::defaultRouteClass()`が呼び出されない場合、使用されるクラスは
+     * `Route`（`Cake\Routing\Route\Route`）です。
      *
-     * Note that `Route` does not do any inflections on URLs which will result in
-     * inconsistently cased URLs when used with `{plugin}`, `{controller}` and
-     * `{action}` markers.
+     * `Route`はURLを屈折させないため、`{plugin}`、`{controller}`、
+     * `{action}`マーカーを使用すると、URLのケースが一貫しなくなることに注意してください。
      */
     $routes->setRouteClass(DashedRoute::class);
 
     $routes->scope('/', function (RouteBuilder $builder): void {
         /*
-         * Here, we are connecting '/' (base path) to a controller called 'Pages',
-         * its action called 'display', and we pass a param to select the view file
-         * to use (in this case, templates/Pages/home.php)...
+         * ここでは、'/'（ベースパス）を'Pages'というコントローラーに接続し、
+         * そのアクションを'display'と呼び、ビューファイルを選択するためのパラメーターを渡します
+         * （この場合、templates/Pages/home.php）...
          */
         $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
 
         /*
-         * ...and connect the rest of 'Pages' controller's URLs.
+         * ...そして、残りの'Pages'コントローラーのURLを接続します。
          */
         $builder->connect('/pages/*', 'Pages::display');
 
         /*
-         * Connect catchall routes for all controllers.
+         * すべてのコントローラーのキャッチオールルートを接続します。
          *
-         * The `fallbacks` method is a shortcut for
+         * `fallbacks`メソッドは、次のショートカットです。
          *
          * ```
          * $builder->connect('/{controller}', ['action' => 'index']);
          * $builder->connect('/{controller}/{action}/*', []);
          * ```
          *
-         * You can remove these routes once you've connected the
-         * routes you want in your application.
+         * アプリケーションで必要なルートを接続したら、これらのルートを削除できます。
          */
         $builder->fallbacks();
     });
 
     /*
-     * If you need a different set of middleware or none at all,
-     * open new scope and define routes there.
+     * 異なるミドルウェアのセットが必要な場合、またはまったくない場合は、
+     * 新しいスコープを開き、そこにルートを定義します。
      *
      * ```
      * $routes->scope('/api', function (RouteBuilder $builder): void {
-     *     // No $builder->applyMiddleware() here.
+     *     // ここでは、$builder->applyMiddleware()はありません。
      *
-     *     // Parse specified extensions from URLs
+     *     // URLから指定された拡張子を解析します
      *     // $builder->setExtensions(['json', 'xml']);
      *
-     *     // Connect API actions here.
+     *     // ここにAPIアクションを接続します。
      * });
      * ```
      */
