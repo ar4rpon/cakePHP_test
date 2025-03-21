@@ -40,6 +40,47 @@ class UsersController extends AppController
         }
     }
 
+    public function resetPassword()
+    {
+        $user = $this->Authentication->getIdentity();
+        if (!$user) {
+            $this->Flash->error(__('You need to be logged in to reset your password.'));
+            return $this->redirect(['action' => 'login']);
+        }
+
+        $user = $this->Users->get($user->id);
+
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            if (!empty($data['current_password']) && !empty($data['new_password']) && !empty($data['confirm_password'])) {
+                // 新しいパスワードと確認用パスワードが一致するか確認
+                if ($data['new_password'] !== $data['confirm_password']) {
+                    $this->Flash->error(__('New password and confirmation password do not match.'));
+                    return;
+                }
+
+                // パスワードハッシャーを使用
+                $hasher = new \Authentication\PasswordHasher\DefaultPasswordHasher();
+
+                if ($hasher->check($data['current_password'], $user->password)) {
+                    $user = $this->Users->patchEntity($user, ['password' => $data['new_password']]);
+                    if ($this->Users->save($user)) {
+                        $this->Flash->success(__('Your password has been updated.'));
+                        return $this->redirect(['controller' => 'Todos', 'action' => 'index']);
+                    } else {
+                        $this->Flash->error(__('Unable to update your password. Please try again.'));
+                    }
+                } else {
+                    $this->Flash->error(__('The current password is incorrect.'));
+                }
+            } else {
+                $this->Flash->error(__('Please fill in all required fields.'));
+            }
+        }
+
+        $this->set(compact('user'));
+    }
+
     public function logout()
     {
         $result = $this->Authentication->getResult();
