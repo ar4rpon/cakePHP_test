@@ -65,12 +65,18 @@ return [
      */
     'EmailTransport' => [
         'default' => [
-            'host' => 'localhost',
-            'port' => 25,
-            'username' => null,
-            'password' => null,
+            'className' => 'debug',
+        ],
+
+        'gmail' => [
+            'className' => 'Cake\Mailer\Transport\SmtpTransport',
+            'host' => 'smtp.gmail.com',
+            'port' => 587,
+            'timeout' => 30,
+            'username' => env('EMAIL', null),
+            'password' => env('EMAIL_PASS', null),
             'client' => null,
-            'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
+            'tls' => true,
         ],
     ],
 ];
