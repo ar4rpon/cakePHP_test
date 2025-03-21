@@ -1,39 +1,41 @@
 <?php
+
 declare(strict_types=1);
 
 /**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * CakePHP(tm) : 高速開発フレームワーク (https://cakephp.org)
+ * 著作権 (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
+ * このソフトウェアはMITライセンスの下でライセンスされています。
+ * 著作権およびライセンス情報の全文についてはLICENSE.txtをご覧ください。
+ * ファイルの再配布には上記の著作権表示を保持する必要があります。
  *
- * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link      https://cakephp.org CakePHP(tm) Project
+ * @copyright 著作権 (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
+ * @link      https://cakephp.org CakePHP(tm) プロジェクト
  * @since     0.2.9
- * @license   https://opensource.org/licenses/mit-license.php MIT License
+ * @license   https://opensource.org/licenses/mit-license.php MITライセンス
  */
+
 namespace App\Controller;
 
 use Cake\Controller\Controller;
 
 /**
- * Application Controller
+ * アプリケーションコントローラー
  *
- * Add your application-wide methods in the class below, your controllers
- * will inherit them.
+ * 以下のクラスにアプリケーション全体で使用するメソッドを追加してください。
+ * 他のコントローラーはこのクラスを継承します。
  *
- * @link https://book.cakephp.org/4/en/controllers.html#the-app-controller
+ * @link https://book.cakephp.org/4/ja/controllers.html#the-app-controller
  */
 class AppController extends Controller
 {
     /**
-     * Initialization hook method.
+     * 初期化フックメソッド
      *
-     * Use this method to add common initialization code like loading components.
+     * このメソッドを使用して、コンポーネントの読み込みなどの共通初期化コードを追加します。
      *
-     * e.g. `$this->loadComponent('FormProtection');`
+     * 例: `$this->loadComponent('FormProtection');`
      *
      * @return void
      */
@@ -43,11 +45,7 @@ class AppController extends Controller
 
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
-
-        /*
-         * Enable the following component for recommended CakePHP form protection settings.
-         * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
-         */
-        //$this->loadComponent('FormProtection');
+        // CSRFトークンの保護を有効にする。なぜか初期状態で有効になっていない。
+        $this->loadComponent('FormProtection');
     }
 }
