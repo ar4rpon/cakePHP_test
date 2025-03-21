@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -14,6 +15,7 @@ declare(strict_types=1);
  * @since     3.3.0
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App;
 
 use Cake\Core\Configure;
@@ -29,21 +31,21 @@ use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 
 /**
- * Application setup class.
+ * アプリケーション設定クラス。
  *
- * This defines the bootstrapping logic and middleware layers you
- * want to use in your application.
+ * このクラスでは、アプリケーションのブートストラップロジックと
+ * 使用するミドルウェアレイヤーを定義します。
  */
 class Application extends BaseApplication
 {
     /**
-     * Load all the application configuration and bootstrap logic.
+     * アプリケーションの設定とブートストラップロジックをすべて読み込みます。
      *
      * @return void
      */
     public function bootstrap(): void
     {
-        // Call parent to load bootstrap from files.
+        // 親クラスを呼び出して、ファイルからブートストラップを読み込みます。
         parent::bootstrap();
 
         if (PHP_SAPI === 'cli') {
@@ -56,47 +58,47 @@ class Application extends BaseApplication
         }
 
         /*
-         * Only try to load DebugKit in development mode
-         * Debug Kit should not be installed on a production system
+         * 開発モードでのみDebugKitを読み込む
+         * Debug Kitは本番環境にはインストールしないでください
          */
         if (Configure::read('debug')) {
             $this->addPlugin('DebugKit');
         }
 
-        // Load more plugins here
+        // ここでさらにプラグインを読み込む
     }
 
     /**
-     * Setup the middleware queue your application will use.
+     * アプリケーションで使用するミドルウェアキューを設定します。
      *
-     * @param \Cake\Http\MiddlewareQueue $middlewareQueue The middleware queue to setup.
-     * @return \Cake\Http\MiddlewareQueue The updated middleware queue.
+     * @param \Cake\Http\MiddlewareQueue $middlewareQueue 設定するミドルウェアキュー。
+     * @return \Cake\Http\MiddlewareQueue 更新されたミドルウェアキュー。
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
         $middlewareQueue
-            // Catch any exceptions in the lower layers,
-            // and make an error page/response
+            // 下層で発生した例外をキャッチし、
+            // エラーページ/レスポンスを作成します。
             ->add(new ErrorHandlerMiddleware(Configure::read('Error'), $this))
 
-            // Handle plugin/theme assets like CakePHP normally does.
+            // CakePHPが通常行うように、プラグイン/テーマのアセットを処理します。
             ->add(new AssetMiddleware([
                 'cacheTime' => Configure::read('Asset.cacheTime'),
             ]))
 
-            // Add routing middleware.
-            // If you have a large number of routes connected, turning on routes
-            // caching in production could improve performance.
-            // See https://github.com/CakeDC/cakephp-cached-routing
+            // ルーティングミドルウェアを追加します。
+            // 多数のルートが接続されている場合、本番環境でルートキャッシュを有効にすると
+            // パフォーマンスが向上する可能性があります。
+            // 詳細は https://github.com/CakeDC/cakephp-cached-routing を参照してください。
             ->add(new RoutingMiddleware($this))
 
-            // Parse various types of encoded request bodies so that they are
-            // available as array through $request->getData()
-            // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
+            // 様々な形式でエンコードされたリクエストボディを解析し、
+            // $request->getData() を通じて配列として利用可能にします。
+            // 詳細は https://book.cakephp.org/4/ja/controllers/middleware.html#body-parser-middleware を参照してください。
             ->add(new BodyParserMiddleware())
 
-            // Cross Site Request Forgery (CSRF) Protection Middleware
-            // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
+            // クロスサイトリクエストフォージェリ (CSRF) 保護ミドルウェア
+            // 詳細は https://book.cakephp.org/4/ja/security/csrf.html#cross-site-request-forgery-csrf-middleware を参照してください。
             ->add(new CsrfProtectionMiddleware([
                 'httponly' => true,
             ]));
@@ -105,20 +107,18 @@ class Application extends BaseApplication
     }
 
     /**
-     * Register application container services.
+     * アプリケーションコンテナサービスを登録します。
      *
-     * @param \Cake\Core\ContainerInterface $container The Container to update.
+     * @param \Cake\Core\ContainerInterface $container 更新するコンテナ。
      * @return void
-     * @link https://book.cakephp.org/4/en/development/dependency-injection.html#dependency-injection
+     * @link https://book.cakephp.org/4/ja/development/dependency-injection.html#dependency-injection
      */
-    public function services(ContainerInterface $container): void
-    {
-    }
+    public function services(ContainerInterface $container): void {}
 
     /**
-     * Bootstrapping for CLI application.
+     * CLIアプリケーションのブートストラップ処理。
      *
-     * That is when running commands.
+     * コマンドを実行する際に使用されます。
      *
      * @return void
      */
@@ -128,6 +128,6 @@ class Application extends BaseApplication
 
         $this->addPlugin('Migrations');
 
-        // Load more plugins here
+        // ここでさらにプラグインを読み込む
     }
 }
