@@ -27,6 +27,7 @@ services:
     # ボリューム設定
     volumes:
       - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/mysql/mysql-data:/var/lib/mysql
     # .envで環境変数を管理
     environment:
       - MYSQL_DATABASE=${DB_NAME}
