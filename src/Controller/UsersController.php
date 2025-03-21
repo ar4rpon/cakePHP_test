@@ -114,8 +114,9 @@ class UsersController extends AppController
                     $tokenEntity = $this->Tokens->newEntity($tokenData);
                     $this->Tokens->save($tokenEntity);
                 }
+                $mailer = new \App\Mailer\UserMailer('gmail');
+                $mailer->send('resetPassword', [$user, $token]);
                 $this->Flash->success('パスワードリセットの手順をメールで送信しました');
-                // mailer でメールを送信する
             } else {
                 $this->Flash->success('パスワードリセットの手順をメールで送信しました');
             }
