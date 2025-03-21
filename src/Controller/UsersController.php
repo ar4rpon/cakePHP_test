@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Utility\Security;
+
 /**
  * Users Controller
  *
@@ -12,13 +14,18 @@ namespace App\Controller;
  */
 class UsersController extends AppController
 {
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->loadModel('Tokens');
+    }
 
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
         // 認証を必要としないログインアクションを構成し、
         // 無限リダイレクトループの問題を防ぎます
-        $this->Authentication->addUnauthenticatedActions(['login', 'add']);
+        $this->Authentication->addUnauthenticatedActions(['login', 'add', 'forgetPassword', 'forgetPasswordReset']);
     }
 
     public function login()
@@ -79,6 +86,76 @@ class UsersController extends AppController
         }
 
         $this->set(compact('user'));
+    }
+
+    public function forgetPassword()
+    {
+        if ($this->request->is('post')) {
+            $email = $this->request->getData('email');
+            $user = $this->Users->findByEmail($email)->first();
+
+            if ($user) {
+                $token = Security::hash(Security::randomBytes(32), 'sha256', true);
+
+                $existingToken = $this->Tokens->find()
+                    ->where(['email' => $user->email])
+                    ->first();
+
+                if ($existingToken) {
+                    $existingToken->token = $token;
+                    $existingToken->token_expiration = new \DateTime('+1 day');
+                    $this->Tokens->save($existingToken);
+                } else {
+                    $tokenData = [
+                        'email' => $user->email,
+                        'token' => $token,
+                        'token_expiration' => new \DateTime('+1 day'),
+                    ];
+                    $tokenEntity = $this->Tokens->newEntity($tokenData);
+                    $this->Tokens->save($tokenEntity);
+                }
+                $this->Flash->success('パスワードリセットの手順をメールで送信しました');
+                // mailer でメールを送信する
+            } else {
+                $this->Flash->success('パスワードリセットの手順をメールで送信しました');
+            }
+
+            return $this->redirect(['action' => 'login']);
+        }
+    }
+
+    public function forgetPasswordReset()
+    {
+        $token = $this->request->getData('token');
+
+        if ($this->request->is('post')) {
+            $newPassword = $this->request->getData('new_password');
+            $confirmPassword = $this->request->getData('confirm_password');
+            if ($newPassword !== $confirmPassword) {
+                $this->Flash->error('パスワードが一致しません');
+                return $this->redirect(['action' => 'login']);
+            }
+
+            $tokenData = $this->Tokens->find()
+                ->where(['token' => $token])
+                ->first();
+            $user = $this->Users->findByEmail($tokenData->email)->first();
+            if (!$tokenData) {
+                $this->Flash->error('不正なアクセスです');
+                return $this->redirect(['action' => 'login']);
+            }
+
+            $user = $this->Users->patchEntity($user, ['password' => $newPassword]);
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('Your password has been updated.'));
+            } else {
+                $this->Flash->error(__('Unable to update your password. Please try again.'));
+            }
+
+            $token = $this->Tokens->get($tokenData->id);
+            $this->Tokens->delete($token);
+            return $this->redirect(['controller' => 'Todos', 'action' => 'index']);
+        }
     }
 
     public function logout()
