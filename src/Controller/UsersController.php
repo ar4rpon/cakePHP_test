@@ -63,7 +63,7 @@ class UsersController extends AppController
                 // 新しいパスワードと確認用パスワードが一致するか確認
                 if ($data['new_password'] !== $data['confirm_password']) {
                     $this->Flash->error(__('New password and confirmation password do not match.'));
-                    return;
+                    return; // ここでreturnしているが、リダイレクトがないため同じページに留まる
                 }
 
                 // パスワードハッシャーを使用
@@ -76,12 +76,18 @@ class UsersController extends AppController
                         return $this->redirect(['controller' => 'Todos', 'action' => 'index']);
                     } else {
                         $this->Flash->error(__('Unable to update your password. Please try again.'));
+                        // エラー時にreturnを追加して処理を終了
+                        return;
                     }
                 } else {
                     $this->Flash->error(__('The current password is incorrect.'));
+                    // エラー時にreturnを追加して処理を終了
+                    return;
                 }
             } else {
                 $this->Flash->error(__('Please fill in all required fields.'));
+                // エラー時にreturnを追加して処理を終了
+                return;
             }
         }
 
@@ -118,6 +124,9 @@ class UsersController extends AppController
                 $mailer->send('resetPassword', [$user, $token]);
                 $this->Flash->success('パスワードリセットの手順をメールで送信しました');
             } else {
+                // セキュリティ上の理由から、ユーザーが存在しない場合でも
+                // 同じ成功メッセージを表示します。これにより、攻撃者はメールアドレスの
+                // 有効性を判断できなくなります（タイミング攻撃の防止）
                 $this->Flash->success('パスワードリセットの手順をメールで送信しました');
             }
 
@@ -140,9 +149,24 @@ class UsersController extends AppController
             $tokenData = $this->Tokens->find()
                 ->where(['token' => $token])
                 ->first();
-            $user = $this->Users->findByEmail($tokenData->email)->first();
+
+            // トークンが存在しない場合はエラー
             if (!$tokenData) {
                 $this->Flash->error('不正なアクセスです');
+                return $this->redirect(['action' => 'login']);
+            }
+
+            // トークンの有効期限をチェック
+            $now = new \DateTime();
+            if ($tokenData->token_expiration < $now) {
+                $this->Flash->error('トークンの有効期限が切れています');
+                return $this->redirect(['action' => 'login']);
+            }
+
+            // トークンが有効な場合のみユーザーを検索
+            $user = $this->Users->findByEmail($tokenData->email)->first();
+            if (!$user) {
+                $this->Flash->error('ユーザーが見つかりません');
                 return $this->redirect(['action' => 'login']);
             }
 
@@ -151,10 +175,11 @@ class UsersController extends AppController
                 $this->Flash->success(__('Your password has been updated.'));
             } else {
                 $this->Flash->error(__('Unable to update your password. Please try again.'));
+                return $this->redirect(['action' => 'login']);
             }
 
-            $token = $this->Tokens->get($tokenData->id);
-            $this->Tokens->delete($token);
+            // トークンを削除
+            $this->Tokens->delete($tokenData);
             return $this->redirect(['controller' => 'Todos', 'action' => 'index']);
         }
     }
@@ -252,6 +277,9 @@ class UsersController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $user = $this->Users->get($id);
+        // $userは実際にはCake\Datasource\EntityInterfaceを実装しているので、
+        // 型キャストは必要ありませんが、IDEの警告を解消するために明示的に型を指定します
+        /** @var \Cake\Datasource\EntityInterface $user */
         if ($this->Users->delete($user)) {
             $this->Flash->success(__('The user has been deleted.'));
         } else {
