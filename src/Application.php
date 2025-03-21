@@ -29,6 +29,13 @@ use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+// 認証プラグイン
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Cake\Routing\Router;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * アプリケーション設定クラス。
@@ -36,7 +43,7 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  * このクラスでは、アプリケーションのブートストラップロジックと
  * 使用するミドルウェアレイヤーを定義します。
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
 {
     /**
      * アプリケーションの設定とブートストラップロジックをすべて読み込みます。
@@ -101,9 +108,42 @@ class Application extends BaseApplication
             // 詳細は https://book.cakephp.org/4/ja/security/csrf.html#cross-site-request-forgery-csrf-middleware を参照してください。
             ->add(new CsrfProtectionMiddleware([
                 'httponly' => true,
-            ]));
+            ]))
+
+            ->add(new RoutingMiddleware($this))
+            // RoutingMiddleware の後に認証を追加
+            ->add(new AuthenticationMiddleware($this));
 
         return $middlewareQueue;
+    }
+
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $authenticationService = new AuthenticationService([
+            'unauthenticatedRedirect' => Router::url('/users/login'),
+            'queryParam' => 'redirect',
+        ]);
+
+        // identifiers を読み込み、email と password のフィールドを確認します
+        $authenticationService->loadIdentifier('Authentication.Password', [
+            'fields' => [
+                'username' => 'email',
+                'password' => 'password',
+            ]
+        ]);
+
+        //  authenticatorsをロードしたら, 最初にセッションが必要です
+        $authenticationService->loadAuthenticator('Authentication.Session');
+        // 入力した email と password をチェックする為のフォームデータを設定します
+        $authenticationService->loadAuthenticator('Authentication.Form', [
+            'fields' => [
+                'username' => 'email',
+                'password' => 'password',
+            ],
+            'loginUrl' => Router::url('/users/login'),
+        ]);
+
+        return $authenticationService;
     }
 
     /**

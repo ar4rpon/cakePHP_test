@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Migrations\AbstractMigration;
@@ -37,8 +38,16 @@ class CreateTodos extends AbstractMigration
             'default' => null,
             'null' => false,
         ]);
+        $table->addColumn('user_id', 'integer', [
+            'default' => null,
+            'null' => false,
+        ]);
         $table->addPrimaryKey([
             'id',
+        ]);
+        $table->addForeignKey('user_id', 'users', 'id', [
+            'delete' => 'CASCADE',
+            'update' => 'NO_ACTION',
         ]);
         $table->create();
     }

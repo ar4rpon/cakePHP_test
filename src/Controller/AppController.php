@@ -47,5 +47,8 @@ class AppController extends Controller
         $this->loadComponent('Flash');
         // CSRFトークンの保護を有効にする。なぜか初期状態で有効になっていない。
         $this->loadComponent('FormProtection');
+
+        // 認証結果を確認し、サイトのロックを行うために次の行を追加します
+        $this->loadComponent('Authentication.Authentication');
     }
 }
